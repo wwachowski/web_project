@@ -1,0 +1,83 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model matches {
+  id                                          Int         @id @default(autoincrement())
+  tournament_id                               Int
+  player1_id                                  Int
+  player2_id                                  Int
+  player1_winner_pick_id                      Int?
+  player2_winner_pick_id                      Int?
+  winner_id                                   Int?
+  round                                       Int
+  users_matches_player1_idTousers             users       @relation("matches_player1_idTousers", fields: [player1_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_matches_player1_winner_pick_idTousers users?      @relation("matches_player1_winner_pick_idTousers", fields: [player1_winner_pick_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_matches_player2_idTousers             users       @relation("matches_player2_idTousers", fields: [player2_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users_matches_player2_winner_pick_idTousers users?      @relation("matches_player2_winner_pick_idTousers", fields: [player2_winner_pick_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  tournaments                                 tournaments @relation(fields: [tournament_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users_matches_winner_idTousers              users?      @relation("matches_winner_idTousers", fields: [winner_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model sponsor_logos {
+  id            Int         @id @default(autoincrement())
+  tournament_id Int
+  url           String
+  tournaments   tournaments @relation(fields: [tournament_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model tournament_participants {
+  id             Int         @id @default(autoincrement())
+  tournament_id  Int
+  user_id        Int
+  license_number String      @unique @db.VarChar(50)
+  ranking        Int
+  tournaments    tournaments @relation(fields: [tournament_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+  users          users       @relation(fields: [user_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+
+  @@unique([tournament_id, ranking])
+  @@unique([tournament_id, user_id])
+}
+
+/// This table contains check constraints and requires additional setup for migrations. Visit https://pris.ly/d/check-constraints for more info.
+model tournaments {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(255)
+  discipline              String                    @db.VarChar(100)
+  organizer_id            Int
+  start_time              DateTime                  @db.Timestamp(6)
+  location                String
+  max_participants        Int
+  application_deadline    DateTime                  @db.Timestamp(6)
+  created_at              DateTime?                 @default(now()) @db.Timestamp(6)
+  matches                 matches[]
+  sponsor_logos           sponsor_logos[]
+  tournament_participants tournament_participants[]
+  users                   users                     @relation(fields: [organizer_id], references: [id], onDelete: Cascade, onUpdate: NoAction)
+}
+
+model users {
+  id                                            Int                       @id @default(autoincrement())
+  first_name                                    String                    @db.VarChar(100)
+  last_name                                     String                    @db.VarChar(100)
+  email                                         String                    @unique @db.VarChar(255)
+  password_hash                                 String
+  is_active                                     Boolean?                  @default(false)
+  activation_token                              String?                   @db.VarChar(255)
+  activation_expires_at                         DateTime?                 @db.Timestamp(6)
+  password_reset_token                          String?                   @db.VarChar(255)
+  password_reset_expires_at                     DateTime?                 @db.Timestamp(6)
+  created_at                                    DateTime?                 @default(now()) @db.Timestamp(6)
+  matches_matches_player1_idTousers             matches[]                 @relation("matches_player1_idTousers")
+  matches_matches_player1_winner_pick_idTousers matches[]                 @relation("matches_player1_winner_pick_idTousers")
+  matches_matches_player2_idTousers             matches[]                 @relation("matches_player2_idTousers")
+  matches_matches_player2_winner_pick_idTousers matches[]                 @relation("matches_player2_winner_pick_idTousers")
+  matches_matches_winner_idTousers              matches[]                 @relation("matches_winner_idTousers")
+  tournament_participants                       tournament_participants[]
+  tournaments                                   tournaments[]
+}

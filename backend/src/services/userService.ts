@@ -74,3 +74,28 @@ export async function loginUser(data: LoginUserInput) {
 
   return { token, user: { id: user.id, email: user.email, first_name: user.first_name, last_name: user.last_name } };
 }
+
+export async function activateAccount(activationToken: string) {
+  const user = await prisma.users.findFirst({
+    where: { activation_token: activationToken },
+  });
+
+  if (!user) throw new Error("Nieprawidłowy token aktywacyjny.");
+
+  if (user.is_active) throw new Error("Konto jest już aktywne.");
+
+  if (!user.activation_expires_at || user.activation_expires_at < new Date()) {
+    throw new Error("Token aktywacyjny wygasł.");
+  }
+
+  await prisma.users.update({
+    where: { id: user.id },
+    data: {
+      is_active: true,
+      activation_token: null,
+      activation_expires_at: null,
+    },
+  });
+
+  return { message: "Konto zostało pomyślnie aktywowane." };
+}

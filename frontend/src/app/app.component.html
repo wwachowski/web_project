@@ -1,0 +1,12 @@
+<router-outlet></router-outlet>
+<app-notification></app-notification>
+@if (isLoggedIn()) {
+<div class="logout">
+  @if (name()) {
+  <div>{{ "Witaj " + name() }}</div>
+  }
+  <button class="btn-logout" (click)="logout()">Wyloguj</button>
+</div>
+} @else if (!isLoginPage()){
+<button class="btn-logout logout login" (click)="login()">Zaloguj</button>
+}

@@ -1,0 +1,7 @@
+<div class="notification-container">
+  @for (notification of notifications$ | async; track $index) {
+  <div [className]="'notification ' + notification.type" (click)="remove(notification.id)" role="alert">
+    {{ notification.message }}
+  </div>
+  }
+</div>

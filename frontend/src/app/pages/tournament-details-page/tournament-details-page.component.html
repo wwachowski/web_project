@@ -1,0 +1,16 @@
+<div *ngIf="loading">Ładowanie...</div>
+<div *ngIf="error">{{ error }}</div>
+
+<div *ngIf="tournament && !loading" class="tournament-details">
+  <h1>{{ tournament.name }}</h1>
+  <p><strong>Dyscyplina:</strong> {{ tournament.discipline }}</p>
+  <p><strong>Organizator:</strong> {{ tournament.users.first_name }} {{ tournament.users.last_name }}</p>
+  <p><strong>Lokalizacja:</strong> {{ tournament.location }}</p>
+  <p><strong>Data rozpoczęcia:</strong> {{ tournament.start_time | date : "medium" }}</p>
+  <p><strong>Deadline zgłoszeń:</strong> {{ tournament.application_deadline | date : "medium" }}</p>
+  <p><strong>Maksymalna liczba uczestników:</strong> {{ tournament.max_participants }}</p>
+
+  <button *ngIf="isOrganizer()" (click)="onEdit()" class="btn btn-edit">Edytuj turniej</button>
+  <button *ngIf="!isOrganizer() && userId" (click)="registerForTournament()" class="btn btn-apply">Zapisz się</button>
+  <a class="btn" routerLink="/tournaments">Wróć do listy</a>
+</div>

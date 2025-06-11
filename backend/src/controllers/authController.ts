@@ -40,7 +40,7 @@ export const loginUser = async (req: Request, res: Response) => {
     const { email, password } = req.body;
 
     if (!email || !password) {
-      sendWarning(res, 400, "Email i hasło są wymagane");
+      sendWarning(res, 200, "Email i hasło są wymagane");
       return;
     }
 
@@ -48,5 +48,21 @@ export const loginUser = async (req: Request, res: Response) => {
     sendMessageWithData(res, 200, "Zalogowano pomyślnie", data);
   } catch (error: any) {
     sendError(res, 401, error.message || "Błąd logowania");
+  }
+};
+
+export const activateAccount = async (req: Request, res: Response) => {
+  try {
+    const { token } = req.params;
+
+    if (!token) {
+      sendWarning(res, 400, "Brak tokena aktywacyjnego");
+      return;
+    }
+
+    const result = await userService.activateAccount(token);
+    sendMessage(res, 200, result.message);
+  } catch (error: any) {
+    sendError(res, 400, error.message || "Błąd aktywacji konta");
   }
 };

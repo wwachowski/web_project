@@ -1,5 +1,3 @@
-create database tournaments;
-
 CREATE TABLE users (
     id SERIAL PRIMARY KEY,
     first_name VARCHAR(100) NOT NULL,
@@ -22,7 +20,7 @@ CREATE TABLE tournaments (
     start_time TIMESTAMP NOT NULL,
     location TEXT NOT NULL,
     max_participants INTEGER NOT NULL CHECK (max_participants > 0),
-    application_deadline TIMESTAMP NOT NULL CHECK (application_deadline < start_time),
+    application_deadline TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
@@ -45,10 +43,11 @@ CREATE TABLE tournament_participants (
 CREATE TABLE matches (
     id SERIAL PRIMARY KEY,
     tournament_id INTEGER NOT NULL REFERENCES tournaments(id) ON DELETE CASCADE,
-    player1_id INTEGER NOT NULL REFERENCES users(id),
-    player2_id INTEGER NOT NULL REFERENCES users(id),
-    player1_winner_pick_id INTEGER REFERENCES users(id),
-    player2_winner_pick_id INTEGER REFERENCES users(id),
-    winner_id INTEGER REFERENCES users(id), -- można uzupełnić, gdy obaj podadzą to samo
+    player1_id INTEGER REFERENCES tournament_participants(id),
+    player2_id INTEGER REFERENCES tournament_participants(id),
+    player1_winner_pick_id INTEGER REFERENCES tournament_participants(id),
+    player2_winner_pick_id INTEGER REFERENCES tournament_participants(id),
+    winner_id INTEGER REFERENCES tournament_participants(id),
     round INTEGER NOT NULL
 );
+

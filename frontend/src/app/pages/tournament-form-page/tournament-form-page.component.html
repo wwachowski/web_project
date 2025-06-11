@@ -1,0 +1,47 @@
+@if (form) {
+<form [formGroup]="form" (ngSubmit)="onSubmit()" class="tournament-form">
+  <h1>{{ editingId ? "Edytuj turniej" : "Nowy turniej" }}</h1>
+
+  <label>
+    Nazwa:
+    <input formControlName="name" />
+  </label>
+
+  <label>
+    Dyscyplina:
+    <input formControlName="discipline" />
+  </label>
+
+  <label>
+    Lokalizacja:
+    <input formControlName="location" />
+  </label>
+
+  <label>
+    Maks. uczestników:
+    <input type="number" formControlName="max_participants" />
+  </label>
+
+  <label>
+    Data rozpoczęcia:
+    <input type="datetime-local" formControlName="start_time" />
+  </label>
+
+  <label>
+    Deadline zapisów:
+    <input type="datetime-local" formControlName="application_deadline" />
+  </label>
+
+  <label>
+    Sponsorzy (linki, oddziel enterami):
+    <textarea formControlName="sponsor_logos"></textarea>
+  </label>
+
+  <div>
+    <button type="submit" [disabled]="loading">{{ editingId ? "Zapisz zmiany" : "Utwórz turniej" }}</button>
+    <a class="btn" routerLink="/tournaments">Idź do listy</a>
+  </div>
+
+  <div class="error" *ngIf="error">{{ error }}</div>
+</form>
+}

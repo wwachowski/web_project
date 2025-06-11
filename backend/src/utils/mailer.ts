@@ -19,7 +19,7 @@ export const sendEmail = async (to: string, subject: string, html: string) => {
 };
 
 export async function sendActivationEmail(recipientEmail: string, token: string) {
-  const activationUrl = `${process.env.FRONTEND_URL}/activate/${token}`;
+  const activationUrl = `${process.env.FRONTEND_URL}activate/${token}`;
 
   const html = `
     <p>Dziękujemy za rejestrację! Kliknij link, aby aktywować konto:</p>

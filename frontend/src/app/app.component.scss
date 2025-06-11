@@ -1,0 +1,24 @@
+.btn-logout {
+  background-color: #dc3545;
+  color: #fff;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+.logout {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  padding: 0.5rem 1rem;
+  border: none;
+  border-radius: 0.3rem;
+  cursor: pointer;
+  z-index: 9999;
+}
+
+.login {
+  background-color: rgb(175, 175, 249);
+}

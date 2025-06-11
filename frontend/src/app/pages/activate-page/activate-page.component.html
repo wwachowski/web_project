@@ -1,0 +1,8 @@
+<h2>Aktywacja konta</h2>
+
+<div *ngIf="loading">Aktywuję konto...</div>
+
+<div *ngIf="message && !loading" class="success">{{ message }}</div>
+<div *ngIf="error && !loading" class="error">{{ error }}</div>
+
+<button *ngIf="!loading" (click)="goHome()">Przejdź do strony głównej</button>

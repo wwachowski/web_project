@@ -5,6 +5,7 @@
     {
       "type": "npm",
       "script": "start",
+      "path": "frontend/",
       "isBackground": true,
       "problemMatcher": {
         "owner": "typescript",
@@ -22,8 +23,27 @@
     },
     {
       "type": "npm",
+      "script": "dev",
+      "path": "backend/",
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "node",
+        "pattern": {
+          "regexp": "^\\s*\\[.*\\]\\s*(.*)$",
+          "message": 1
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Server started|Error"
+        }
+      }
+    },
+    {
+      "type": "npm",
       "script": "test",
       "isBackground": true,
+      "path": "frontend/",
       "problemMatcher": {
         "owner": "typescript",
         "pattern": "$tsc",

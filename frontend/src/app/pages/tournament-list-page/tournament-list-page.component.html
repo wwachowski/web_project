@@ -1,0 +1,35 @@
+<div class="tournaments-container">
+  <div class="search-add-wrapper">
+    <input
+      type="text"
+      placeholder="Szukaj turnieju..."
+      [value]="search()"
+      (input)="onSearchInput($event)"
+    />
+    <button class="btn-add" (click)="goToCreate()">Dodaj</button>
+  </div>
+
+  <div *ngIf="loading()">Ładowanie turniejów...</div>
+  <div *ngIf="error()">{{ error() }}</div>
+
+  @if (tournaments().length > 0) {
+  <div class="tournament-list">
+    @for (tournament of tournaments(); track tournament.id) {
+    <div class="tournament-card" [routerLink]="['/tournaments', tournament.id]">
+      <h3>{{ tournament.name }}</h3>
+      <p>Dyscyplina: {{ tournament.discipline }}</p>
+      <p>Start: {{ tournament.start_time | date : "medium" }}</p>
+      <p>Rejestracja do: {{ tournament.application_deadline | date : "medium" }}</p>
+    </div>
+    }
+  </div>
+  } @else {
+  <div>Brak turniejów z danym filtrem</div>
+  }
+
+  <div class="pagination-controls" *ngIf="totalPages() > 1">
+    <button (click)="previousPage()" [disabled]="page() === 1">Poprzednia</button>
+    <span>Strona {{ page() }} z {{ totalPages() }}</span>
+    <button (click)="nextPage()" [disabled]="page() === totalPages()">Następna</button>
+  </div>
+</div>

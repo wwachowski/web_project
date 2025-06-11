@@ -1,0 +1,12 @@
+<h2>Logowanie</h2>
+<form (ngSubmit)="onSubmit()">
+  <label>Email</label>
+  <input type="email" [(ngModel)]="email" name="email" required />
+
+  <label>Hasło</label>
+  <input type="password" [(ngModel)]="password" name="password" required />
+
+  <button type="submit">Zaloguj się</button>
+  <a style="margin-top: 10px; display: block" routerLink="/tournaments">Idź do listy turniejów</a>
+  <a style="margin-top: 10px; display: block" routerLink="/register">Rejestracja</a>
+</form>

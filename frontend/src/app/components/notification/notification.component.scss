@@ -1,0 +1,40 @@
+.notification-container {
+  position: fixed;
+  bottom: 2rem;
+  right: 2rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 10000;
+  max-width: 320px;
+}
+
+.notification {
+  font-size: 2rem;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  color: white;
+  cursor: pointer;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+  user-select: none;
+  opacity: 0.95;
+  transition: opacity 0.3s ease;
+  font-weight: 600;
+  font-size: 0.9rem;
+
+  &:hover {
+    opacity: 1;
+  }
+}
+
+.notification.error {
+  background-color: #f44336; // czerwony
+}
+
+.notification.warning {
+  background-color: #ff9800; // pomarańczowy
+}
+
+.notification.message {
+  background-color: #2196f3; // niebieski
+}

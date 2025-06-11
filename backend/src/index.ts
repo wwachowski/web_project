@@ -1,17 +1,14 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import { PrismaClient } from '@prisma/client';
+import express from "express";
+import dotenv from "dotenv";
+import authRoutes from "./routes/auth";
 
 dotenv.config();
-const app = express();
-const prisma = new PrismaClient();
 
+const app = express();
 app.use(express.json());
 
-app.get('/', (req, res) => {
-  res.send('API działa!');
-});
+app.use("/api/auth", authRoutes);
 
 app.listen(3000, () => {
-  console.log('Serwer działa na http://localhost:3000');
+  console.log("Serwer działa na http://localhost:3000");
 });

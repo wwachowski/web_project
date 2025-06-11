@@ -53,3 +53,9 @@ host all all 127.0.0.1/32 trust
 ustawiamy na trust - mozna sie logowac bez hasla
 
 Dane shcematu w schema.sql
+
+============================================
+-------------------RESZTA-------------------
+============================================
+
+Wysyłka email dzieki https://mailtrap.io/

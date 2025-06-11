@@ -13,11 +13,15 @@ export class TournamentService extends BaseApiService {
   }
 
   getById(id: number) {
-    return this.get<ApiResponse<{ tournament: TournamentDetails }>>(`/${id}`);
+    return this.get<ApiResponse<{ tournament: TournamentDetails; matches: Match[] }>>(`/${id}`);
   }
 
   createOrUpdate(body: { id?: number; name: string; discipline: string; start_time: string; location: string; max_participants: number; application_deadline: string; sponsor_logos: string[] }) {
     return this.post<ApiResponse<{ tournament: TournamentDetails }>>('', body);
+  }
+
+  pickWinner(matchId: number, winnerId: number) {
+    return this.post<ApiResponse<null>>(`/pick/${matchId}`, { winner_id: winnerId });
   }
 }
 
@@ -59,6 +63,34 @@ export interface TournamentDetails {
     first_name: string;
     last_name: string;
   };
-  sponsor_logos: any[];
-  tournament_participants: any[];
+  sponsor_logos: {
+    id: number;
+    tournament_id: number;
+    url: string;
+  }[];
+  tournament_participants: {
+    id: number;
+    tournament_id: number;
+    user_id: number;
+    license_number: string;
+    ranking: number;
+    users: {
+      id: number;
+      first_name: string;
+      last_name: string;
+    };
+  }[];
+}
+
+export interface Match {
+  id: number;
+  round: number;
+  player1_id: number | null;
+  player2_id: number | null;
+  player1_user_id: number | null;
+  player2_user_id: number | null;
+  player1_name: string | null;
+  player2_name: string | null;
+  winner_id: number | null;
+  winner_name: string | null;
 }

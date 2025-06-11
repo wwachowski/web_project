@@ -1,24 +1,30 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterModule } from '@angular/router';
-import { TournamentDetails, TournamentService } from '../../services/tournament.service';
+import { Match, TournamentDetails, TournamentService } from '../../services/tournament.service';
 import { ApiResponse } from '../../services/base/base-api.service';
 import { TournamentParticipantService } from '../../services/participiant.service';
 import { NotificationService } from '../../services/notification.service';
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-tournament-details-page',
   standalone: true,
-  imports: [CommonModule, RouterModule],
+  imports: [CommonModule, RouterModule, FormsModule],
   templateUrl: './tournament-details-page.component.html',
   styleUrls: ['./tournament-details-page.component.scss'],
 })
 export class TournamentDetailsPageComponent implements OnInit {
   tournament: TournamentDetails | null = null;
+  matches: Match[] = [];
   loading = true;
   error = '';
-
   userId: number | null = null;
+
+  // Pola do edycji zwycięzcy meczu
+  editingMatchId: number | null = null;
+  selectedWinnerId: number | null = null;
+  savingWinner = false;
 
   constructor(
     private route: ActivatedRoute,
@@ -32,23 +38,22 @@ export class TournamentDetailsPageComponent implements OnInit {
     const id = Number(this.route.snapshot.paramMap.get('id'));
     if (isNaN(id)) {
       this.router.navigate(['/']);
+      return;
     }
-    const userIdStr = localStorage.getItem('userId');
-    this.userId = userIdStr ? +userIdStr : null;
+    this.userId = +(localStorage.getItem('userId') || '0');
 
-    if (id) {
-      this.tournamentService.getById(id).subscribe({
-        next: (res) => {
-          const response = res as unknown as ApiResponse<{ tournament: TournamentDetails }>;
-          this.tournament = response.data.tournament;
-          this.loading = false;
-        },
-        error: () => {
-          this.error = 'Nie udało się załadować turnieju.';
-          this.loading = false;
-        },
-      });
-    }
+    this.tournamentService.getById(id).subscribe({
+      next: (res) => {
+        const response = res as unknown as ApiResponse<{ tournament: TournamentDetails; matches: Match[] }>;
+        this.tournament = response.data.tournament;
+        this.matches = response.data.matches;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Nie udało się załadować turnieju.';
+        this.loading = false;
+      },
+    });
   }
 
   isOrganizer(): boolean {
@@ -83,5 +88,69 @@ export class TournamentDetailsPageComponent implements OnInit {
         }
       },
     });
+  }
+
+  getRounds(): number[] {
+    return [...new Set(this.matches.map((m) => m.round))].sort((a, b) => a - b);
+  }
+
+  getMatchesForRound(round: number): Match[] {
+    return this.matches.filter((m) => m.round === round);
+  }
+
+  canEditMatch(match: Match): boolean {
+    return this.userId === match.player1_user_id || this.userId === match.player2_user_id;
+  }
+
+  // Obsługa edycji zwycięzcy meczu
+
+  editMatch(match: Match) {
+    this.editingMatchId = match.id;
+    this.selectedWinnerId = match.winner_id ?? null;
+  }
+
+  cancelEdit() {
+    this.editingMatchId = null;
+    this.selectedWinnerId = null;
+  }
+
+  saveWinner(match: Match) {
+    if (this.selectedWinnerId === null) {
+      this.notification.show('Wybierz zwycięzcę!', 'warning');
+      return;
+    }
+
+    this.savingWinner = true;
+    this.tournamentService.pickWinner(match.id, this.selectedWinnerId).subscribe({
+      error: (err) => {
+        this.savingWinner = false;
+      },
+      complete: () => {
+        this.reloadTournamentData();
+      },
+    });
+  }
+
+  private reloadTournamentData() {
+    if (!this.tournament?.id) return;
+
+    this.tournamentService.getById(this.tournament.id).subscribe({
+      next: (res) => {
+        const response = res as unknown as ApiResponse<{ tournament: TournamentDetails; matches: Match[] }>;
+        this.tournament = response.data.tournament;
+        this.matches = response.data.matches;
+        this.editingMatchId = null;
+        this.selectedWinnerId = null;
+        this.savingWinner = false;
+      },
+      error: () => {
+        this.notification.show('Nie udało się odświeżyć danych turnieju', 'error');
+        this.savingWinner = false;
+      },
+    });
+  }
+
+  get editingMatch(): Match | undefined {
+    return this.matches.find((m) => m.id === this.editingMatchId!);
   }
 }

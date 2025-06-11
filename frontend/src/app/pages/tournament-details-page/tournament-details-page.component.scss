@@ -33,3 +33,157 @@
     }
   }
 }
+
+.tournament-details {
+  .sponsor-logos {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .match-box {
+    margin-bottom: 1rem;
+  }
+
+  .match {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .vs {
+    font-weight: bold;
+  }
+
+  .winner {
+    font-weight: bold;
+    color: green;
+  }
+}
+
+.tournament-matches {
+  margin-top: 3rem;
+
+  .round {
+    margin-bottom: 2rem;
+    display: flex;
+    gap: 20px;
+    justify-content: center;
+    align-items: center;
+
+    .round-header {
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 1rem;
+      font-size: 1.2rem;
+      border-bottom: 2px solid #ccc;
+      padding-bottom: 0.5rem;
+    }
+
+    .matches-row {
+      display: flex;
+      justify-content: space-evenly;
+      flex-wrap: wrap;
+      gap: 2rem;
+    }
+
+    .match-card {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      background-color: #f9f9f9;
+      padding: 1rem 1.5rem;
+      border-radius: 10px;
+      text-align: center;
+      position: relative;
+      min-width: 180px;
+      box-shadow: 0 0 6px rgba(0, 0, 0, 0.1);
+    }
+
+    .player {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .result {
+      font-size: 0.8rem;
+      font-weight: bold;
+      margin-bottom: 0.3rem;
+
+      &.win {
+        color: green;
+      }
+
+      &.lose {
+        color: red;
+      }
+    }
+
+    .vs {
+      margin: 0.5rem 0;
+      font-weight: bold;
+    }
+
+    .btn-edit-match {
+      margin-top: 0.5rem;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      padding: 0.3rem 0.6rem;
+      border-radius: 5px;
+      font-size: 0.8rem;
+      cursor: pointer;
+    }
+  }
+}
+
+.round-header {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 1rem;
+  font-size: 1.2rem;
+  border-bottom: 2px solid #ccc;
+  padding-bottom: 0.5rem;
+}
+
+.tournament-details ul {
+  list-style: none; /* usuwa punktory */
+  padding-left: 0; /* usuwa wcięcie */
+  margin-top: 20px; /* odstęp od góry */
+}
+
+.edit-winner-global-container {
+  margin-top: 2rem;
+  padding: 1rem;
+  border: 2px dashed #ccc;
+  border-radius: 8px;
+  background-color: #f9f9f9;
+
+  h3 {
+    margin-bottom: 0.5rem;
+  }
+
+  .edit-winner-info {
+    margin-bottom: 0.5rem;
+  }
+
+  select {
+    padding: 0.4rem;
+    margin-top: 0.5rem;
+    margin-bottom: 1rem;
+    width: 100%;
+    max-width: 300px;
+  }
+
+  .edit-winner-actions {
+    display: flex;
+    gap: 0.5rem;
+
+    button {
+      padding: 0.4rem 0.8rem;
+      cursor: pointer;
+    }
+  }
+}

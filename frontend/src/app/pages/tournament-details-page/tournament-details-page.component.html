@@ -1,6 +1,7 @@
 <div *ngIf="loading">Ładowanie...</div>
 <div *ngIf="error">{{ error }}</div>
 
+<!-- Szczegóły turnieju -->
 <div *ngIf="tournament && !loading" class="tournament-details">
   <h1>{{ tournament.name }}</h1>
   <p><strong>Dyscyplina:</strong> {{ tournament.discipline }}</p>
@@ -13,4 +14,59 @@
   <button *ngIf="isOrganizer()" (click)="onEdit()" class="btn btn-edit">Edytuj turniej</button>
   <button *ngIf="!isOrganizer() && userId" (click)="registerForTournament()" class="btn btn-apply">Zapisz się</button>
   <a class="btn" routerLink="/tournaments">Wróć do listy</a>
+
+  <h2>Uczestnicy:</h2>
+  <ul>
+    <li *ngFor="let participant of tournament.tournament_participants">
+      {{ participant.users.first_name }} {{ participant.users.last_name }} - Licencja: {{ participant.license_number }}, Ranking: {{ participant.ranking }}
+    </li>
+  </ul>
+</div>
+
+<!-- Mecze turniejowe -->
+<div *ngIf="matches.length" class="tournament-matches">
+  <div *ngFor="let round of getRounds()" class="round">
+    <div class="round-header">Runda {{ round }}</div>
+    <div *ngFor="let match of getMatchesForRound(round)" class="match-card">
+      <div class="player">
+        <div class="result" [ngClass]="{ win: match.winner_id === match.player1_id, lose: match.winner_id && match.winner_id !== match.player1_id }">
+          {{ match.winner_id ? (match.winner_id === match.player1_id ? "WIN" : "LOSE") : "" }}
+        </div>
+        <div>{{ match.player1_name || "---" }}</div>
+      </div>
+
+      <div class="vs">-</div>
+
+      <div class="player">
+        <div class="result" [ngClass]="{ win: match.winner_id === match.player2_id, lose: match.winner_id && match.winner_id !== match.player2_id }">
+          {{ match.winner_id ? (match.winner_id === match.player2_id ? "WIN" : "LOSE") : "" }}
+        </div>
+        <div>{{ match.player2_name || "---" }}</div>
+      </div>
+
+      <button *ngIf="canEditMatch(match)" class="btn-edit-match" (click)="editMatch(match)">Edytuj</button>
+    </div>
+  </div>
+
+  <!-- GLOBALNY PANEL EDYCJI ZWYCIĘZCY MECZU -->
+  <div *ngIf="editingMatchId !== null" class="edit-winner-global-container">
+    <h3>Edytujesz zwycięzcę meczu</h3>
+
+    <div class="edit-winner-info">
+      <strong>Zawodnicy:</strong>
+      <span>{{ editingMatch?.player1_name || "---" }} vs {{ editingMatch?.player2_name || "---" }}</span>
+    </div>
+
+    <label for="winner-select">Wybierz zwycięzcę:</label>
+    <select id="winner-select" [(ngModel)]="selectedWinnerId">
+      <option [ngValue]="null" disabled>Wybierz zawodnika</option>
+      <option *ngIf="editingMatch?.player1_id" [ngValue]="editingMatch!.player1_id">{{ editingMatch?.player1_name }}</option>
+      <option *ngIf="editingMatch?.player2_id" [ngValue]="editingMatch!.player2_id">{{ editingMatch?.player2_name }}</option>
+    </select>
+
+    <div class="edit-winner-actions">
+      <button (click)="saveWinner(editingMatch!)" [disabled]="savingWinner">Zapisz zwycięzcę</button>
+      <button (click)="cancelEdit()" [disabled]="savingWinner">Anuluj</button>
+    </div>
+  </div>
 </div>

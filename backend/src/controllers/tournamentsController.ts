@@ -59,9 +59,13 @@ export const getTournamentById = async (req: Request, res: Response) => {
     const tournament = await prisma.tournaments.findUnique({
       where: { id },
       include: {
-        users: { select: { id: true, email: true, first_name: true, last_name: true } },
+        users: { select: { id: true, email: true, first_name: true, last_name: true } }, // organizator
         sponsor_logos: true,
-        tournament_participants: true,
+        tournament_participants: {
+          include: {
+            users: { select: { id: true, first_name: true, last_name: true } }, // uczestnicy z danymi użytkownika
+          },
+        },
       },
     });
 
@@ -70,7 +74,42 @@ export const getTournamentById = async (req: Request, res: Response) => {
       return;
     }
 
-    sendData(res, 200, { tournament });
+    const matches = await prisma.matches.findMany({
+      where: { tournament_id: id },
+      include: {
+        users_matches_player1_idTousers: {
+          include: {
+            users: { select: { id: true, first_name: true, last_name: true } },
+          },
+        },
+        users_matches_player2_idTousers: {
+          include: {
+            users: { select: { id: true, first_name: true, last_name: true } },
+          },
+        },
+        users_matches_winner_idTousers: {
+          include: {
+            users: { select: { id: true, first_name: true, last_name: true } },
+          },
+        },
+      },
+      orderBy: [{ round: "asc" }, { id: "asc" }],
+    });
+
+    const formattedMatches = matches.map((match) => ({
+      id: match.id,
+      round: match.round,
+      player1_id: match.player1_id,
+      player2_id: match.player2_id,
+      player1_name: match.users_matches_player1_idTousers ? `${match.users_matches_player1_idTousers.users.first_name} ${match.users_matches_player1_idTousers.users.last_name}` : null,
+      player2_name: match.users_matches_player2_idTousers ? `${match.users_matches_player2_idTousers.users.first_name} ${match.users_matches_player2_idTousers.users.last_name}` : null,
+      player1_user_id: match.users_matches_player1_idTousers?.users.id || null,
+      player2_user_id: match.users_matches_player2_idTousers?.users.id || null,
+      winner_id: match.winner_id,
+      winner_name: match.users_matches_winner_idTousers ? `${match.users_matches_winner_idTousers.users.first_name} ${match.users_matches_winner_idTousers.users.last_name}` : null,
+    }));
+
+    sendData(res, 200, { tournament, matches: formattedMatches });
   } catch (error) {
     console.error(error);
     sendError(res, 500, "Błąd podczas pobierania szczegółów turnieju");
@@ -158,5 +197,100 @@ export const upsertTournament = async (req: Request, res: Response) => {
   } catch (error) {
     console.error(error);
     sendError(res, 500, "Błąd podczas zapisywania turnieju");
+  }
+};
+
+export const pickMatchWinner = async (req: Request, res: Response) => {
+  try {
+    const matchId = parseInt(req.params.id);
+    const { winner_id } = req.body;
+    const userId = (req as any).user.id;
+
+    if (isNaN(matchId) || typeof winner_id !== "number") {
+      sendError(res, 400, "Nieprawidłowe dane wejściowe");
+      return;
+    }
+
+    // Pobierz mecz
+    const match = await prisma.matches.findUnique({
+      where: { id: matchId },
+      select: {
+        id: true,
+        player1_id: true,
+        player2_id: true,
+        player1_winner_pick_id: true,
+        player2_winner_pick_id: true,
+        winner_id: true,
+      },
+    });
+
+    if (!match) {
+      sendError(res, 404, "Mecz nie istnieje");
+      return;
+    }
+
+    // Pobierz uczestnika turnieju tego meczu, dla zalogowanego usera
+    const participant = await prisma.tournament_participants.findFirst({
+      where: {
+        user_id: userId,
+        id: {
+          in: [match.player1_id!, match.player2_id!],
+        },
+      },
+    });
+
+    if (!participant) {
+      sendError(res, 403, "Nie masz uprawnień do typowania tego meczu");
+      return;
+    }
+
+    // Sprawdź, czy wytypowany zwycięzca to faktycznie jeden z uczestników meczu
+    if (winner_id !== match.player1_id && winner_id !== match.player2_id) {
+      sendError(res, 400, "Wytypowany zwycięzca musi być jednym z uczestników meczu");
+      return;
+    }
+
+    const isPlayer1 = participant.id === match.player1_id;
+    const currentPick = isPlayer1 ? match.player1_winner_pick_id : match.player2_winner_pick_id;
+    const otherPick = isPlayer1 ? match.player2_winner_pick_id : match.player1_winner_pick_id;
+
+    let updateData: any = {};
+
+    // Zaktualizuj wybór aktualnego gracza
+    if (isPlayer1) {
+      updateData.player1_winner_pick_id = winner_id;
+    } else {
+      updateData.player2_winner_pick_id = winner_id;
+    }
+
+    // Jeśli drugi gracz już typował, sprawdzamy konflikt
+    if (otherPick !== null) {
+      if (otherPick === winner_id) {
+        updateData.winner_id = winner_id; // zgadzają się — ustalamy zwycięzcę
+      } else {
+        // Konflikt — zerujemy typy i winner_id
+        updateData.player1_winner_pick_id = null;
+        updateData.player2_winner_pick_id = null;
+        updateData.winner_id = null;
+
+        await prisma.matches.update({
+          where: { id: matchId },
+          data: updateData,
+        });
+
+        sendError(res, 409, "Konflikt wyboru zwycięzcy — uczestnicy muszą ponownie wytypować zwycięzcę");
+        return;
+      }
+    }
+
+    await prisma.matches.update({
+      where: { id: matchId },
+      data: updateData,
+    });
+
+    sendMessageWithData(res, 200, "Typ zwycięzcy zapisany pomyślnie", { matchId, winner_id });
+  } catch (error) {
+    console.error(error);
+    sendError(res, 500, "Błąd podczas zapisywania typu zwycięzcy");
   }
 };

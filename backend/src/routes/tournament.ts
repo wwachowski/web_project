@@ -10,4 +10,6 @@ router.get("/:id", tournamentsController.getTournamentById);
 
 router.post("/", authMiddleware, tournamentsController.upsertTournament);
 
+router.post("/pick/:id", authMiddleware, tournamentsController.pickMatchWinner);
+
 export default router;

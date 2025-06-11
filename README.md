@@ -59,3 +59,4 @@ Dane shcematu w schema.sql
 ============================================
 
 Wysyłka email dzieki https://mailtrap.io/
+Testowanie backendu - postman

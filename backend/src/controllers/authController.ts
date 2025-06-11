@@ -1,5 +1,6 @@
 import { Request, Response } from "express";
-import { sendWarning, sendError } from "../utils/responseHelper";
+import { sendWarning, sendError, sendMessage, sendMessageWithData } from "../utils/responseHelper";
+import { isValidEmail } from "../utils/validators";
 import * as userService from "../services/userService";
 
 export const registerUser = async (req: Request, res: Response) => {
@@ -11,6 +12,11 @@ export const registerUser = async (req: Request, res: Response) => {
       return;
     }
 
+    if (!isValidEmail(email)) {
+      sendWarning(res, 400, "Podaj poprawny adres e-mail");
+      return;
+    }
+
     await userService.registerUser({
       first_name,
       last_name,
@@ -18,9 +24,7 @@ export const registerUser = async (req: Request, res: Response) => {
       password,
     });
 
-    res.status(201).json({
-      message: "Użytkownik zarejestrowany. Sprawdź e-mail w celu aktywacji.",
-    });
+    sendMessage(res, 201, "Użytkownik zarejestrowany. Sprawdź e-mail w celu aktywacji.");
   } catch (error: any) {
     if (error.code === "P2002") {
       sendError(res, 409, "Email jest już zajęty");
@@ -28,6 +32,21 @@ export const registerUser = async (req: Request, res: Response) => {
     }
     console.error(error);
     sendError(res, 500, "Coś poszło nie tak");
-    return;
+  }
+};
+
+export const loginUser = async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      sendWarning(res, 400, "Email i hasło są wymagane");
+      return;
+    }
+
+    const data = await userService.loginUser({ email, password });
+    sendMessageWithData(res, 200, "Zalogowano pomyślnie", data);
+  } catch (error: any) {
+    sendError(res, 401, error.message || "Błąd logowania");
   }
 };

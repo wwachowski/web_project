@@ -23,6 +23,10 @@ export class TournamentService extends BaseApiService {
   pickWinner(matchId: number, winnerId: number) {
     return this.post<ApiResponse<null>>(`/pick/${matchId}`, { winner_id: winnerId });
   }
+
+  generateBrackets() {
+    return this.get2(`/ladder/generate`);
+  }
 }
 
 export interface Tournament {

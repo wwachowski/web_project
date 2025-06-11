@@ -21,6 +21,10 @@ export abstract class BaseApiService {
     return this.http.get<T>(`${BASE_URL}${this.endpoint}${path}`, options);
   }
 
+  protected get2<T>(path: string = '', options?: any) {
+    return this.http.get<T>(`${BASE_URL}${path}`, options);
+  }
+
   protected post<T>(path: string = '', body?: any, options?: any) {
     return this.http.post<T>(`${BASE_URL}${this.endpoint}${path}`, body, options);
   }

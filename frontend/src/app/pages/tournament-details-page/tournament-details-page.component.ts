@@ -21,15 +21,14 @@ export class TournamentDetailsPageComponent implements OnInit {
   error = '';
   userId: number | null = null;
 
-  // Pola do edycji zwycięzcy meczu
   editingMatchId: number | null = null;
   selectedWinnerId: number | null = null;
   savingWinner = false;
 
   constructor(
     private route: ActivatedRoute,
-    private tournamentService: TournamentService,
     private router: Router,
+    private tournamentService: TournamentService,
     private participantService: TournamentParticipantService,
     private notification: NotificationService
   ) {}
@@ -40,9 +39,24 @@ export class TournamentDetailsPageComponent implements OnInit {
       this.router.navigate(['/']);
       return;
     }
+
     this.userId = +(localStorage.getItem('userId') || '0');
 
-    this.tournamentService.getById(id).subscribe({
+    this.generateBrackets(id);
+  }
+
+  private generateBrackets(tournamentId: number) {
+    this.tournamentService.generateBrackets().subscribe({
+      complete: () => this.loadTournament(tournamentId),
+      error: () => {
+        this.notification.show('Nie udało się wygenerować drabinki turniejowej', 'error');
+        this.loadTournament(tournamentId);
+      },
+    });
+  }
+
+  private loadTournament(tournamentId: number) {
+    this.tournamentService.getById(tournamentId).subscribe({
       next: (res) => {
         const response = res as unknown as ApiResponse<{ tournament: TournamentDetails; matches: Match[] }>;
         this.tournament = response.data.tournament;
@@ -102,8 +116,6 @@ export class TournamentDetailsPageComponent implements OnInit {
     return this.userId === match.player1_user_id || this.userId === match.player2_user_id;
   }
 
-  // Obsługa edycji zwycięzcy meczu
-
   editMatch(match: Match) {
     this.editingMatchId = match.id;
     this.selectedWinnerId = match.winner_id ?? null;
@@ -122,7 +134,13 @@ export class TournamentDetailsPageComponent implements OnInit {
 
     this.savingWinner = true;
     this.tournamentService.pickWinner(match.id, this.selectedWinnerId).subscribe({
+      next: () => this.notification.show('Typ zwycięzcy zapisany', 'message'),
       error: (err) => {
+        if (err.status === 409) {
+          this.notification.show('Konflikt wyboru zwycięzcy — uczestnicy muszą ponownie wytypować zwycięzcę', 'warning');
+        } else {
+          this.notification.show('Błąd podczas zapisywania typu zwycięzcy', 'error');
+        }
         this.savingWinner = false;
       },
       complete: () => {

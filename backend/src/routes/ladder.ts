@@ -6,8 +6,9 @@ const router = Router();
 
 export const generateBrackets = async (req: Request, res: Response) => {
   try {
+    console.error("error");
     await generateBracketsForStartedTournaments();
-    res.status(200);
+    res.status(200).json({ test: "Brackets generated successfully" });
     return;
   } catch (error: any) {
     console.error(error);
